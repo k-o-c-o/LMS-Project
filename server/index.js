@@ -3,6 +3,10 @@ const cors = require("cors") //imports cors middleware to connect frontend with 
 const User = require("./models/User")
 const connectDB = require("./db")
 const app = express() //creates express application instance
+const jwt = require("jsonwebtoken")
+const auth = require("./middleware/auth")
+
+const SECRET ="mysupersecretkey"
 
 app.use(cors())
 app.use(express.json())
@@ -15,6 +19,13 @@ app.get("/",(req,res)=> {res.send("LMS API running")}) //visiting homepage shows
 //request object comes from client
 //response object comes from server
 
+app.get("/dashboard",auth,(req,res)=>{
+    res.json({message:"Welcome to dashboard",
+        user:req.user
+        //every protected route needs user info
+    })
+}
+)
 
 app.post("/register",async(req,res)=>{ 
      try
@@ -51,9 +62,13 @@ app.post("/login",async(req,res)=> {
         return res.status(400).json({message:"Invalid password"})
         //400 =bad request
     }
+    
+    const token = jwt.sign({id:user.id,role:user.role},
+        SECRET,{expiresIn:"1h"}
+    )
 
     res.json({message : "Login successful",
-        user
+        token
     })
 
 })

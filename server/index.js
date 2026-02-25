@@ -5,7 +5,8 @@ const connectDB = require("./db")
 const app = express() //creates express application instance
 const jwt = require("jsonwebtoken")
 const auth = require("./middleware/auth")
-
+const role = require("./middleware/role")
+const Course = require("./models/Course")
 const SECRET ="mysupersecretkey"
 
 app.use(cors())
@@ -57,6 +58,9 @@ app.post("/login",async(req,res)=> {
         return res.status(404).json({message:"User not found"})
         //404- user not found
     }
+    console.log("Entered password:",password)
+    console.log("Password:",user.password)
+
     if(user.password != password)
     {
         return res.status(400).json({message:"Invalid password"})
@@ -73,6 +77,46 @@ app.post("/login",async(req,res)=> {
 
 })
 
+//auth is middleware
+app.post("/create-course",auth,role("admin"),async(req,res)=>{
+    const course = new Course({
+        title:req.body.title,
+        description:req.body.description,
+        createdBy:req.user.id
+    })
+
+    await course.save()
+    //to wait till the save to finsih before sending.
+
+    res.json({
+        message:"Course created",course
+    })
+})
+
+app.get("/my-courses",auth,role("student"),async(req,res)=>{
+    const courses = await Course.find({studentsEnrolled:req.user.id})
+    //gives all courses from courses collection
+    res.json(courses)
+    //sends retrieved courses back as JSON
+})
+app.post ("/enroll/:courseId",auth,role("student"),async(req,res)=>{
+    const course = await Course.findById(req.params.courseId)
+    //req.params is an object in Express.js that contains route paramters
+    //findById is a built in Mongoose method
+
+    if(!course)
+        return res.status(404).json({message:"Course not found"})
+    //404-Not found
+    if(course.studentsEnrolled.includes(req.user.id))
+        return res.status(400).json({message:"Already enrolled"})
+    //400- Bad request
+
+    course.studentsEnrolled.push(req.user.id)
+    await course.save()
+
+    res.json({message:"Enrolled successfully"})
+})
+//:xyz is dynamic route parameter means that part of URL will change delpending on course being enrolled to
 app.listen(5000,()=>{ console.log("Server running on port 5000")}) 
 //starts server on port 5000
 

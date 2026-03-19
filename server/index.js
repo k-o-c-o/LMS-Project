@@ -1,7 +1,8 @@
+require("dotenv").config()
 const express = require("express")  //imports express framework
 const cors = require("cors") //imports cors middleware to connect frontend with backend
 const User = require("./models/User")
-const connectDB = require("./db")
+const connectDB = require("./config/db")
 const app = express() //creates express application instance
 const jwt = require("jsonwebtoken")
 const auth = require("./middleware/auth")

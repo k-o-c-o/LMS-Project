@@ -1,17 +1,21 @@
 require("dotenv").config()
 const express = require("express")  //imports express framework
 const cors = require("cors") //imports cors middleware to connect frontend with backend
-const User = require("./models/User")
+//const User = require("./models/User")
 const connectDB = require("./config/db")
 const app = express() //creates express application instance
-const jwt = require("jsonwebtoken")
+//const jwt = require("jsonwebtoken")
 const auth = require("./middleware/auth")
 const role = require("./middleware/role")
-const Course = require("./models/Course")
-const SECRET ="mysupersecretkey"
+//const Course = require("./models/Course")
+//const SECRET ="mysupersecretkey"
+const authRoutes = require("./routes/authRoutes")
+const courseRoutes = require("./routes/courseRoutes")
 
 app.use(cors())
 app.use(express.json())
+app.use(authRoutes)
+app.use(courseRoutes)
 
 connectDB()
 
@@ -28,7 +32,7 @@ app.get("/dashboard",auth,(req,res)=>{
     })
 }
 )
-
+/*
 app.post("/register",async(req,res)=>{ 
      try
      {
@@ -76,9 +80,10 @@ app.post("/login",async(req,res)=> {
         token
     })
 
-})
+})*/
 
 //auth is middleware
+/*
 app.post("/create-course",auth,role("admin"),async(req,res)=>{
     const course = new Course({
         title:req.body.title,
@@ -117,8 +122,10 @@ app.post ("/enroll/:courseId",auth,role("student"),async(req,res)=>{
 
     res.json({message:"Enrolled successfully"})
 })
+    */
 //:xyz is dynamic route parameter means that part of URL will change delpending on course being enrolled to
-app.listen(5000,()=>{ console.log("Server running on port 5000")}) 
+const PORT = process.env.PORT || 5000
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 //starts server on port 5000
 
 
